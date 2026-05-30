@@ -47,7 +47,8 @@ jobs:
           cd ..
           cd frontend
           npm install 
-          npm run dev
+          npx vite
+          sleep 5
 
       - name: 7. Instalar Utilidad AllureCTL (Allure TestOps)
         run: |
