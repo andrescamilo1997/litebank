@@ -47,6 +47,7 @@ jobs:
           cd ..
           cd frontend
           npm install 
+          chmod +x node_modules/.bin/vite
           npx vite
           sleep 5
 
