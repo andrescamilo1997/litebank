@@ -39,13 +39,14 @@ jobs:
 
       - name: 6. Lanzar Aplicación y Consumidor en Segundo Plano
         run: |
-          cd app
-          node server.js &
-          node worker.js &
-          sleep 5
+          cd backend
+          npm install                          
+          npm run start-server &               
+          sleep 5                              
+          npm run start-worker &  
           cd ..
           cd frontend
-          npm install &
+          npm install 
           npm run dev
 
       - name: 7. Instalar Utilidad AllureCTL (Allure TestOps)
