@@ -43,6 +43,10 @@ jobs:
           node server.js &
           node worker.js &
           sleep 5
+          cd ..
+          cd frontend
+          npm install &
+          npm run dev
 
       - name: 7. Instalar Utilidad AllureCTL (Allure TestOps)
         run: |
