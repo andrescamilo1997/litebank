@@ -1,0 +1,78 @@
+name: ejercicio-dia-4-kafka-docker-tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  run-automation-suite:
+    name: Ejecución de Pruebas y Reporte
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Descargar Código del Repositorio
+        uses: actions/checkout@v4
+
+      - name: 2. Configurar Entorno Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 3. Levantar Infraestructura de Kafka (Docker)
+        run: |
+          docker compose -f docker-compose.yml up -d
+          echo "Esperando que Kafka-Broker esté completamente inicializado..."
+          sleep 15
+
+      - name: 4. Instalar Dependencias de la Aplicación
+        run: |
+          cd app
+          npm install
+
+      - name: 5. Instalar Dependencias de Pruebas (Playwright)
+        run: |
+          cd tests
+          npm install
+          npx playwright install --with-deps
+
+      - name: 6. Lanzar Aplicación y Consumidor en Segundo Plano
+        run: |
+          cd backend
+          npm install                          
+          npm run start-server &               
+          sleep 5                              
+          npm run start-worker &  
+          cd ..
+          cd frontend
+          npm install 
+          chmod +x node_modules/.bin/vite
+          npx vite &
+          sleep 5
+
+      - name: 7. Ejecutar Pruebas Playwright
+        run: |
+          cd tests
+          npx playwright test
+        continue-on-error: true
+
+      - name: 8. Ejecutar Pruebas y Transmitir Resultados a Allure TestOps
+        if: always()
+        run: |
+          npm install -g allure-commandline
+          
+      - name: 9. Generar Reporte Allure HTML
+        if: always()
+        run: |
+          cd tests
+          allure generate allure-results --clean -o allure-report
+
+      - name: 10. Adjuntar Reporte al Workflow
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: tests/allure-report
+
+          
